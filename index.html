@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rocket Power | Strawberry Stardust AR</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0c0615;font-family:system-ui;color:white}#hud{position:fixed;z-index:100;top:env(safe-area-inset-top,0);left:0;right:0;padding:20px 18px;background:linear-gradient(#16091fdf,transparent);pointer-events:none}#hud b{font-size:17px;letter-spacing:.12em;text-shadow:0 0 12px #ff35ba}#status{display:block;margin-top:8px;font-size:12px;color:#ffd3f4}#foot{position:fixed;z-index:100;bottom:0;left:0;right:0;text-align:center;padding:18px;background:linear-gradient(transparent,#15061de0);font-size:12px;pointer-events:none}a-scene{position:absolute;inset:0}</style></head>
+<body><div id="hud"><b>ROCKET POWER</b><span id="status">Starting camera…</span></div><div id="foot">Point your camera at the Strawberry Stardust package</div>
+<a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: yes; uiScanning: yes; uiError: yes; filterMinCF: 0.0001; filterBeta: 10" embedded color-space="sRGB" renderer="colorManagement: true; alpha: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+<a-assets><img id="glow" src="./hologram.png" crossorigin="anonymous"></a-assets>
+<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+<a-entity id="target" mindar-image-target="targetIndex: 0">
+  <a-plane src="#glow" width="1" height="1.25" position="0 0 0.02" material="transparent: true; alphaTest: 0.02; side: double; blending: additive; depthWrite: false" animation="property: material.opacity; from: 0.35; to: 0.95; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine"></a-plane>
+  <a-plane src="#glow" width="1.06" height="1.325" position="0 0 0.04" material="transparent: true; opacity: 0.35; side: double; blending: additive; depthWrite: false" animation="property: scale; from: 1 1 1; to: 1.035 1.035 1; dir: alternate; dur: 1900; loop: true"></a-plane>
+  <a-ring radius-inner="0.42" radius-outer="0.435" position="0 0 0.07" material="color: #ff35b7; transparent: true; opacity: 0.65; side: double" animation="property: rotation; to: 0 0 360; dur: 12000; loop: true; easing: linear"></a-ring>
+  <a-entity id="particles"></a-entity>
+</a-entity></a-scene>
+<script>
+const status=document.querySelector('#status');const target=document.querySelector('#target');
+target.addEventListener('targetFound',()=>{status.textContent='STRAWBERRY STARDUST ACTIVATED';document.querySelector('#foot').textContent='Hologram locked to package';});
+target.addEventListener('targetLost',()=>{status.textContent='Tracking lost — point at the package';document.querySelector('#foot').textContent='Keep the front artwork in view';});
+const particles=document.querySelector('#particles');for(let i=0;i<24;i++){let p=document.createElement('a-sphere');let x=(Math.random()-.5)*.95,y=(Math.random()-.5)*1.2,z=.06+Math.random()*.15;let r=.004+Math.random()*.01;p.setAttribute('radius',r);p.setAttribute('position',`${x} ${y} ${z}`);p.setAttribute('material',`color: ${i%3?'#ff55c8':'#fff0fa'}; emissive: #ff35a9; emissiveIntensity: 0.9; transparent: true; opacity: 0.9`);p.setAttribute('animation',`property: position; from: ${x} ${y} ${z}; to: ${x+.06*(Math.random()-.5)} ${y+.2+Math.random()*.2} ${z}; dur: ${1800+Math.random()*2200}; loop: true; dir: alternate; easing: easeInOutSine`);particles.appendChild(p)}
+</script></body></html>
