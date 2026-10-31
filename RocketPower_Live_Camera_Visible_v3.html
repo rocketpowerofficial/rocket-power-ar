@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Rocket Power | Strawberry Stardust AR</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050308;font-family:system-ui,-apple-system,sans-serif;color:white}
+#ui{position:fixed;z-index:99;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 18px) 18px 16px;pointer-events:none;background:linear-gradient(#12071ddd,transparent)}
+#logo{font-size:21px;font-weight:1000;letter-spacing:-.05em;font-style:italic;text-shadow:0 0 12px #ff2caa}#sub{font-size:10px;letter-spacing:.17em;color:#ffb6e3;margin-top:4px}
+#status{position:fixed;z-index:99;bottom:calc(env(safe-area-inset-bottom) + 20px);left:14px;right:14px;text-align:center;padding:13px;background:#170c23dc;border:1px solid #f947b65c;border-radius:13px;font-size:13px}
+#start{position:fixed;z-index:100;inset:0;background:radial-gradient(circle at 50% 35%,#3c0e35,#08030d 70%);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:26px;text-align:center}
+#start h1{font-size:34px;font-weight:1000;font-style:italic;margin:0;line-height:1.05}#start p{font-size:14px;max-width:310px;line-height:1.5;color:#eac3df}
+button{background:linear-gradient(120deg,#d91587,#fa65bc);color:#fff;border:1px solid #ffa3db;border-radius:15px;padding:16px 32px;font-size:16px;font-weight:800;box-shadow:0 6px 30px #fa1e8e55}
+#err{max-width:340px;color:#ff9bb8;font-size:12px;overflow-wrap:anywhere}
+/* Camera video must be ABOVE the page background and BELOW the AR canvas. */
+html,body{background:#050308}
+body>video, video.mindar-video, #scene video {position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;object-fit:cover!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:1!important;pointer-events:none!important}
+a-scene#scene{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;background:transparent!important;z-index:2!important;pointer-events:none!important}
+a-scene#scene .a-canvas{background:transparent!important;z-index:2!important}
+#ui,#status{z-index:10}#start{z-index:20}
+</style></head><body>
+<div id="ui"><div id="logo">ROCKET POWER</div><div id="sub">STRAWBERRY STARDUST · LIVE AR</div></div>
+<div id="status">Tap Start Camera to begin.</div>
+<div id="start"><h1>STRAWBERRY<br>STARDUST</h1><p>Point your camera at the original package. Watch its cover artwork lift forward and glow.</p><button id="go">Start Camera</button><div id="err"></div></div>
+<a-scene id="scene" mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: yes; uiScanning: no; uiError: yes; filterMinCF: 0.0001; filterBeta: 0.001" color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: false; alpha: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
+<a-assets><img id="art" src="./strawberry-stardust-art.png" crossorigin="anonymous"></a-assets>
+<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+<a-entity id="target" mindar-image-target="targetIndex: 0">
+  <a-entity id="lift" position="0 0 0.02" visible="false">
+    <a-plane id="haloOuter" width="1.06" height="1.34" position="0 0 -0.028" material="color:#ff19a3;shader:flat;transparent:true;opacity:.2;side:double;depthWrite:false" animation__glow="property: material.opacity;from:.08;to:.34;dur:1100;dir:alternate;loop:true;easing:easeInOutSine"></a-plane>
+    <a-plane id="haloInner" width="1.01" height="1.29" position="0 0 -0.014" material="color:#ff80df;shader:flat;transparent:true;opacity:.3;side:double;depthWrite:false" animation__glow="property: material.opacity;from:.18;to:.55;dur:750;dir:alternate;loop:true;easing:easeInOutSine"></a-plane>
+    <a-plane id="cover" width="1" height="1.25" position="0 0 0" material="src:#art;shader:flat;transparent:true;side:double;depthWrite:false" animation__breathe="property: position;from:0 0 0;to:0 0 .07;dur:1500;dir:alternate;loop:true;easing:easeInOutSine"></a-plane>
+  </a-entity>
+</a-entity>
+</a-scene>
+<script>
+const scene=document.getElementById('scene'),target=document.getElementById('target'),lift=document.getElementById('lift'),status=document.getElementById('status'),start=document.getElementById('start'),go=document.getElementById('go'),err=document.getElementById('err');
+let ready=false,starting=false;
+function exposeCamera(){
+  if(scene.object3D) scene.object3D.background=null;
+  if(scene.renderer){scene.renderer.setClearColor(0x000000,0);scene.renderer.setClearAlpha(0);}
+  const canvas=scene.querySelector('canvas.a-canvas');
+  if(canvas){canvas.style.setProperty('background','transparent','important');canvas.style.setProperty('z-index','2','important');}
+  document.querySelectorAll('video').forEach(video=>{
+    video.setAttribute('playsinline','');
+    video.style.setProperty('position','fixed','important');
+    video.style.setProperty('inset','0','important');
+    video.style.setProperty('width','100vw','important');
+    video.style.setProperty('height','100dvh','important');
+    video.style.setProperty('object-fit','cover','important');
+    video.style.setProperty('display','block','important');
+    video.style.setProperty('visibility','visible','important');
+    video.style.setProperty('opacity','1','important');
+    video.style.setProperty('z-index','1','important');
+  });
+}
+scene.addEventListener('loaded',()=>{ready=true;exposeCamera()});
+new MutationObserver(exposeCamera).observe(document.body,{childList:true,subtree:true});
+scene.addEventListener('arReady',()=>{exposeCamera();status.textContent='Camera active · point at Strawberry Stardust artwork';start.style.display='none';starting=false});
+scene.addEventListener('arError',e=>{status.textContent='AR could not start';err.textContent='Camera or tracking failed. Check camera permission and confirm targets.mind is uploaded next to index.html.';start.style.display='flex';starting=false;go.disabled=false});
+target.addEventListener('targetFound',()=>{lift.setAttribute('visible',true);lift.removeAttribute('animation__rise');lift.setAttribute('position','0 0 0.02');lift.setAttribute('animation__rise','property: position;from:0 0 0.02;to:0 0 0.32;dur:1000;easing:easeOutCubic');status.textContent='STARDUST ACTIVATED ✦'});
+target.addEventListener('targetLost',()=>{lift.setAttribute('visible',false);status.textContent='Point at the package to reactivate'});
+go.onclick=async()=>{if(starting)return;starting=true;go.disabled=true;err.textContent='';status.textContent='Starting camera…';try{if(!window.isSecureContext)throw Error('Camera requires HTTPS.');if(!navigator.mediaDevices?.getUserMedia)throw Error('Camera API unavailable in this browser. Open in Safari.');if(!ready)await new Promise((resolve,reject)=>{if(scene.hasLoaded)return resolve();scene.addEventListener('loaded',resolve,{once:true});setTimeout(()=>reject(Error('3D scene library did not load. Check your connection.')),15000)});if(!scene.systems['mindar-image-system'])throw Error('AR library did not load.');await scene.systems['mindar-image-system'].start();}catch(e){status.textContent='Camera did not start';err.textContent=(e?.message||String(e))+' · Allow Safari camera access and verify targets.mind is in the repository root.';go.disabled=false;starting=false;}};
+</script></body></html>
